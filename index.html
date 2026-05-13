@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🔍 Таємнича Справа Зниклої Золотої Пекторалі — Дитяча детективна гра 'Escape Room'</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a1f4e;
+    --gold: #f5c842;
+    --amber: #f09820;
+    --red: #e84040;
+    --green: #3cb371;
+    --teal: #2abfbf;
+    --cream: #fef9ee;
+    --paper: #fff8e7;
+    --shadow: rgba(26,31,78,0.18);
+  }
+
+html {
+    height: -webkit-fill-available;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background:
+      radial-gradient(1.5px 1.5px at 10% 15%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(2px 2px at 55% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 55%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 90% 25%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(2px 2px at 45% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 75%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 85% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      var(--navy);
+    background-attachment: scroll;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow-x: hidden;
+  }
+
+  /* HEADER TIMER */
+  #game-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(26,31,78,0.97);
+    -webkit-backdrop-filter: blur(0);
+    border-bottom: 3px solid var(--gold);
+    padding: 10px 24px;
+    padding-top: calc(10px + env(safe-area-inset-top));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .header-title {
+    font-family: 'Fredoka One', cursive;
+    color: var(--gold);
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+  }
+
+  #timer-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245,200,66,0.12);
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 6px 16px;
+  }
+
+  #timer-box .clock-icon { font-size: 1.4rem; }
+  #timer-display {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--gold);
+    min-width: 70px;
+    text-align: center;
+  }
+
+  #timer-display.urgent { color: var(--red); -webkit-animation: blink 1s infinite; animation: blink 1s infinite; }
+
+  @-webkit-keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  #progress-bar-wrap {
+    flex: 1;
+    max-width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+  }
+
+  #progress-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  #progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  #progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    border-radius: 6px;
+    transition: width 0.6s ease;
+  }
+
+  #exit-btn {
+    background: transparent;
+    border: 2px solid var(--red);
+    color: var(--red);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  #exit-btn:hover { background: var(--red); color: white; }
+
+  /* MAIN CONTAINER */
+  #game-area {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 90px 20px 60px;
+    padding-top: calc(90px + env(safe-area-inset-top));
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
+  /* SCREEN — each scene */
+  .screen { display: none; -webkit-animation: fadeIn 0.5s ease; animation: fadeIn 0.5s ease; }
+  .screen.active { display: block; }
+
+  @-webkit-keyframes fadeIn {
+    from { opacity: 0; -webkit-transform: translateY(18px); transform: translateY(18px); }
+    to   { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* PAPER CARD */
+  .paper {
+    background: var(--paper);
+    border-radius: 18px;
+    padding: 36px 40px;
+    box-shadow: 0 8px 40px var(--shadow), 0 2px 0 var(--gold);
+    border-top: 6px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .paper::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(26,31,78,0.06) 28px);
+    pointer-events: none;
+  }
+
+  /* CHAPTER TAG */
+  .chapter-tag {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--gold);
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.85rem;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+  }
+
+  /* SCENE TITLE */
+  .scene-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--navy);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .scene-sub {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+
+  /* CLUE BOX */
+  .clue-box {
+    background: rgba(26,31,78,0.07);
+    border-left: 5px solid var(--amber);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 1rem;
+    color: var(--navy);
+    font-weight: 600;
+    line-height: 1.7;
+  }
+
+  .clue-box .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--amber);
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  /* INPUT */
+  .answer-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .answer-wrap .btn { flex-shrink: 0; }
+
+  .answer-input {
+    flex: 1;
+    min-width: 160px;
+    padding: 12px 18px;
+    border: 3px solid rgba(26,31,78,0.2);
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: white;
+    color: var(--navy);
+    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .answer-input:focus { border-color: var(--teal); }
+  .answer-input.correct { border-color: var(--green); background: #f0fff4; }
+  .answer-input.wrong { border-color: var(--red); animation: shake 0.4s; will-change: transform; }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(5px)}
+  }
+
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, opacity 0.15s;
+    letter-spacing: 0.5px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: top;
+    line-height: 1.2;
+    box-sizing: border-box;
+  }
+
+  .btn:active { opacity: 0.82; }
+
+  .btn-primary {
+    background: var(--navy);
+    color: var(--gold);
+    box-shadow: 0 4px 14px rgba(26,31,78,0.4);
+  }
+
+  .btn-primary:hover { background: #252c70; }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--navy);
+    box-shadow: 0 4px 14px rgba(245,200,66,0.4);
+  }
+
+  .btn-gold:hover { background: #f0bc20; }
+
+  .btn-green {
+    background: var(--green);
+    color: white;
+    box-shadow: 0 4px 14px rgba(60,179,113,0.4);
+  }
+
+  /* FEEDBACK */
+  .feedback {
+    margin-top: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    min-height: 22px;
+    transition: all 0.3s;
+  }
+
+  .feedback.ok { color: var(--green); }
+  .feedback.err { color: var(--red); }
+
+  /* HINT */
+  .hint-toggle {
+    background: none;
+    border: 2px dashed var(--amber);
+    color: var(--amber);
+    border-radius: 10px;
+    padding: 7px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.15s, opacity 0.15s;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .hint-toggle:active { opacity: 0.75; }
+
+  .hint-text {
+    display: none;
+    background: #fffbe6;
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-size: 0.92rem;
+    color: #7a5800;
+    font-weight: 600;
+  }
+
+  /* CROSSWORD */
+  .crossword-grid {
+    display: inline-grid;
+    gap: 3px;
+    margin: 18px auto;
+  }
+
+  .cw-cell {
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(26,31,78,0.25);
+    border-radius: 6px;
+    background: white;
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--navy);
+    text-transform: uppercase;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    caret-color: var(--teal);
+  }
+
+  .cw-cell:focus { border-color: var(--teal); background: #f0faff; }
+  .cw-cell.filled { background: #e8f5ff; border-color: var(--teal); }
+  .cw-cell.correct-cell { background: #d4f8e4; border-color: var(--green); }
+  .cw-cell.wrong-cell { background: #ffe0e0; border-color: var(--red); }
+  .cw-cell.blocked { background: var(--navy); border-color: var(--navy); pointer-events: none; }
+  .cw-cell.numbered { position: relative; }
+
+  .cw-num {
+    position: absolute;
+    top: 2px; left: 4px;
+    font-size: 9px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    color: var(--amber);
+    line-height: 1;
+  }
+
+  .cw-clues {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 16px;
+  }
+
+  .cw-clue-group h4 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--navy);
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 4px;
+  }
+
+  .cw-clue-item {
+    font-size: 0.88rem;
+    color: #444;
+    margin-bottom: 5px;
+    line-height: 1.5;
+  }
+
+  .cw-clue-item span {
+    font-weight: 800;
+    color: var(--amber);
+  }
+
+  /* CIPHER */
+  .cipher-table {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 14px 0;
+  }
+
+  .cipher-pair {
+    background: var(--navy);
+    border-radius: 8px;
+    padding: 6px 10px;
+    text-align: center;
+    min-width: 40px;
+  }
+
+  .cipher-sym { font-size: 1.3rem; color: var(--gold); line-height: 1; }
+  .cipher-letter { font-size: 0.75rem; color: rgba(255,255,255,0.7); font-weight: 700; margin-top: 2px; }
+
+  .encoded-word {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--navy);
+    letter-spacing: 6px;
+    background: rgba(26,31,78,0.07);
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 12px;
+    margin: 12px 0;
+  }
+
+  /* PUZZLE GRID (number puzzle) */
+  .number-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 60px);
+    gap: 6px;
+    margin: 18px 0;
+  }
+
+  .ng-cell {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(26,31,78,0.2);
+    border-radius: 10px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--navy);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  .ng-cell:active { opacity: 0.75; }
+  .ng-cell.selected { background: var(--teal); color: white; border-color: var(--teal); }
+  .ng-cell.empty { background: #f5f5f5; color: transparent; cursor: default; pointer-events: none; }
+
+  /* ANAGRAM */
+  .letter-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0;
+  }
+
+  .letter-tile {
+    width: 48px;
+    height: 54px;
+    background: var(--navy);
+    color: var(--gold);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: background 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+    border: 2px solid rgba(245,200,66,0.3);
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  .letter-tile:active { opacity: 0.75; }
+  .letter-tile.used { opacity: 0.3; cursor: default; pointer-events: none; }
+
+  .answer-tiles {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 62px;
+    margin: 10px 0;
+    padding: 8px;
+    border: 3px dashed rgba(26,31,78,0.2);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.5);
+  }
+
+  .answer-tile {
+    width: 48px;
+    height: 54px;
+    background: var(--teal);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  .answer-tile:active { opacity: 0.75; }
+
+  /* SCENE ILLUSTRATONS (pure CSS) */
+  .scene-art {
+    text-align: center;
+    font-size: 5rem;
+    margin: 10px 0 18px;
+  }
+
+  /* SUCCESS / FAIL OVERLAYS */
+  .overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(10,12,40,0.92);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 30px;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+
+  .overlay.show {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    -webkit-animation: fadeIn 0.4s;
+    animation: fadeIn 0.4s;
+  }
+
+  .overlay-box {
+    background: var(--paper);
+    border-radius: 24px;
+    padding: 44px 48px;
+    max-width: 520px;
+    width: 100%;
+    border-top: 8px solid var(--gold);
+    box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+  }
+
+  .overlay-box .big-icon { font-size: 5rem; margin-bottom: 14px; }
+  .overlay-box h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+
+  .overlay-box p {
+    font-size: 1.05rem;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 22px;
+  }
+
+  .score-line {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--amber);
+    margin-bottom: 20px;
+  }
+
+  /* INTRO SCREEN */
+  #intro .paper { text-align: center; }
+  #intro .big-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.6rem;
+    color: var(--navy);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  #intro .tagline {
+    font-size: 1.05rem;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+
+  .story-card {
+    background: rgba(26,31,78,0.06);
+    border-radius: 14px;
+    padding: 18px 22px;
+    text-align: left;
+    margin: 18px 0 26px;
+    border-left: 5px solid var(--teal);
+    font-size: 0.97rem;
+    color: var(--navy);
+    line-height: 1.8;
+    font-weight: 600;
+  }
+
+  .mission-list {
+    list-style: none;
+    text-align: left;
+    margin: 0 0 24px;
+  }
+
+  .mission-list li {
+    padding: 7px 0;
+    font-size: 0.95rem;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px dashed rgba(26,31,78,0.12);
+  }
+
+  .mission-list li .num {
+    background: var(--navy);
+    color: var(--gold);
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.9rem;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── REDJIL&CO LOGO ── */
+  .redjil-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto 18px;
+    line-height: 1;
+    position: relative;
+  }
+
+  .logo-detective {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 2px;
+  }
+
+  .logo-brand {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.8rem;
+    color: var(--green);
+    letter-spacing: 1px;
+    line-height: 1;
+    text-shadow:
+      0 2px 0 rgba(40,120,60,0.35),
+      0 4px 18px rgba(60,179,113,0.25);
+    position: relative;
+  }
+
+  .logo-amp {
+    color: var(--gold);
+    font-size: 2.2rem;
+  }
+
+  .logo-tagline-small {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 7px;
+    color: var(--green);
+    opacity: 0.7;
+    margin-top: 6px;
+    text-transform: uppercase;
+  }
+
+  /* divider line under logo */
+  .redjil-logo::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    margin: 8px auto 0;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 600px) {
+    .logo-brand { font-size: 2.2rem; }
+    .logo-amp { font-size: 1.8rem; }
+  }
+
+  /* PLAYER NAME INPUT */
+  .name-input-wrap {
+    margin: 20px 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .name-input-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--navy);
+  }
+
+  .name-input-field {
+    width: 100%;
+    max-width: 340px;
+    padding: 13px 20px;
+    border: 3px solid rgba(26,31,78,0.2);
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    background: white;
+    color: var(--navy);
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .name-input-field:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(42,191,191,0.18);
+  }
+
+  .name-input-field::placeholder {
+    color: #bbb;
+    font-weight: 600;
+  }
+
+  /* PLAYER NAME BADGE in header */
+  #player-badge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: rgba(42,191,191,0.15);
+    border: 2px solid var(--teal);
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-family: 'Fredoka One', cursive;
+    color: var(--teal);
+    font-size: 0.95rem;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 7px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+  /* ═══════════════════════════════════════════
+     MOBILE — 720×1600 (≈360px CSS width @ 2x)
+     ═══════════════════════════════════════════ */
+  @media (max-width: 600px) {
+
+    /* Viewport touch fixes */
+    html { -webkit-text-size-adjust: 100%; }
+    * { -webkit-tap-highlight-color: transparent; }
+
+    /* ── HEADER ── */
+    #game-header {
+      padding: 8px 12px;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    .header-title { display: none; } /* hide on small screens to save space */
+
+    #player-badge {
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      max-width: 90px;
+      border-radius: 8px;
+    }
+
+    #timer-box {
+      padding: 5px 10px;
+      gap: 5px;
+      border-radius: 9px;
+    }
+
+    #timer-box .clock-icon { font-size: 1.1rem; }
+
+    #timer-display {
+      font-size: 1.2rem;
+      min-width: 54px;
+    }
+
+    #progress-bar-wrap {
+      max-width: 100px;
+      gap: 2px;
+    }
+
+    #progress-label { font-size: 0.62rem; }
+    #progress-bar { height: 6px; }
+
+    #exit-btn {
+      font-size: 0.75rem;
+      padding: 5px 9px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ── GAME AREA ── */
+    #game-area {
+      padding: 74px 12px 48px;
+    }
+
+    /* ── PAPER CARD ── */
+    .paper {
+      padding: 22px 16px 26px;
+      border-radius: 14px;
+      border-top-width: 5px;
+    }
+
+    /* ── INTRO ── */
+    #intro .big-title {
+      font-size: 1.8rem;
+    }
+
+    #intro .tagline {
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    .story-card {
+      font-size: 0.88rem;
+      padding: 14px 14px;
+      line-height: 1.7;
+    }
+
+    .mission-list li {
+      font-size: 0.85rem;
+      padding: 6px 0;
+    }
+
+    .name-input-wrap { margin: 16px 0 18px; gap: 8px; }
+    .name-input-label { font-size: 1rem; }
+    .name-input-field {
+      font-size: 1rem;
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: 100%;
+    }
+
+    /* ── SCENE ── */
+    .scene-art { font-size: 3.6rem; margin: 6px 0 12px; }
+    .scene-title { font-size: 1.45rem; margin-bottom: 6px; }
+    .scene-sub { font-size: 0.88rem; margin-bottom: 16px; line-height: 1.55; }
+    .chapter-tag { font-size: 0.78rem; padding: 3px 11px; margin-bottom: 10px; }
+
+    /* ── CLUE BOX ── */
+    .clue-box {
+      padding: 11px 13px;
+      margin: 12px 0;
+      font-size: 0.9rem;
+    }
+
+    /* ── ANSWER INPUT ── */
+    .answer-wrap {
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .answer-input {
+      width: 100%;
+      min-width: unset;
+      padding: 13px 14px;
+      font-size: 1.05rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      width: 100%;
+      padding: 13px 20px;
+      font-size: 0.95rem;
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+
+    .answer-wrap .btn { width: auto; flex: 1; }
+
+    .hint-toggle {
+      width: 100%;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      text-align: center;
+    }
+
+    .hint-text {
+      font-size: 0.85rem;
+      padding: 10px 13px;
+    }
+
+    /* ── CIPHER ── */
+    .cipher-pair { padding: 5px 7px; min-width: 34px; }
+    .cipher-sym { font-size: 1.1rem; }
+    .cipher-letter { font-size: 0.68rem; }
+    .encoded-word { font-size: 1.4rem; letter-spacing: 4px; padding: 8px 14px; }
+
+    /* ── CROSSWORD ── */
+    .cw-cell {
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+      border-radius: 5px;
+    }
+
+    .cw-num { font-size: 8px; }
+    .crossword-grid { gap: 2px; }
+
+    .cw-clues {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .cw-clue-item { font-size: 0.82rem; }
+    .cw-clue-group h4 { font-size: 0.9rem; }
+
+    /* ── NUMBER GRID ── */
+    .number-grid {
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 5px;
+      margin: 12px 0;
+    }
+
+    .ng-cell {
+      width: auto !important;
+      height: 52px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+    }
+
+    /* ── ANAGRAM ── */
+    .letter-tile {
+      width: 42px;
+      height: 46px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+    }
+
+    .answer-tile {
+      width: 42px;
+      height: 46px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+    }
+
+    .answer-tiles { min-height: 54px; gap: 6px; padding: 6px; }
+    .letter-tiles { gap: 6px; }
+
+    /* ── OVERLAYS ── */
+    .overlay { padding: 20px 14px; }
+
+    .overlay-box {
+      padding: 30px 22px;
+      border-radius: 18px;
+      border-top-width: 6px;
+    }
+
+    .overlay-box .big-icon { font-size: 3.6rem; margin-bottom: 10px; }
+    .overlay-box h2 { font-size: 1.55rem; margin-bottom: 8px; }
+    .overlay-box p { font-size: 0.9rem; margin-bottom: 16px; line-height: 1.6; }
+    .score-line { font-size: 1.15rem; margin-bottom: 14px; }
+
+    /* ── FEEDBACK ── */
+    .feedback { font-size: 0.88rem; }
+  }
+
+  /* Extra narrow safety — 320px */
+  @media (max-width: 360px) {
+    .cw-cell { width: 30px; height: 30px; font-size: 0.85rem; }
+    .ng-cell { height: 44px; font-size: 1rem; }
+    .letter-tile, .answer-tile { width: 36px; height: 40px; font-size: 1rem; }
+    #progress-bar-wrap { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="game-header">
+  <div class="header-title">🔍 Detective "Redjil&Co" </div>
+  <div id="player-badge">🕵️ <span id="player-badge-name"></span></div>
+  <div id="timer-box">
+    <span class="clock-icon">⏱️</span>
+    <div id="timer-display">30:00</div>
+  </div>
+  <div id="progress-bar-wrap">
+    <div id="progress-label">ПРОГРЕС: 0 / 5</div>
+    <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <button id="exit-btn" onclick="confirmExit()">✕ ВИЙТИ</button>
+</div>
+
+<!-- GAME AREA -->
+<div id="game-area">
+
+  <!-- ════════════ INTRO ════════════ -->
+  <div id="intro" class="screen active">
+    <div class="paper">
+      <div class="scene-art">🕵️</div>
+
+      <div class="redjil-logo">
+        <span class="logo-detective">Detective</span>
+        <span class="logo-brand">Redjil<span class="logo-amp">&amp;</span>Co</span>
+        <span class="logo-tagline-small">AGENCY</span>
+      </div>
+
+      <div class="big-title">Справа Зниклої<br>'Скіфської Золотої Пекторалі'</div>
+      <p class="tagline">Справжня детективна пригода "Escape Room" for team</p>
+
+      <div class="story-card">
+        📜 <strong>Таємне повідомлення:</strong><br><br>
+        Детективе Реджиле та команда! У нашому музеї зникла золота пектораль — безцінний артефакт і знахідка XX століття, яку нам подарував археолог і ваш товариш Матвій (молодший). Камери зафіксували підозрілого у масці о 21:00. Ти єдиний зісвоєю командою у складі якої: Ульяна( майстер головоломок і загадок),Тая (винахідниця і актриса) та Mикола ( майст з розв'язувань складних задач та відкривань закритих замків), хто можуть розгадати цю справу! Пройди 5 рівнів, збери докази та знайди злочинця!
+      </div>
+
+      <ul class="mission-list">
+        <li><span class="num">1</span> Шифрований лист — розкодуй таємне слово</li>
+        <li><span class="num">2</span> Кросворд слідчого — заповни сітку</li>
+        <li><span class="num">3</span> Числовий замок — підбери код</li>
+        <li><span class="num">4</span> Анаграма — знайди ім'я підозрюваного</li>
+        <li><span class="num">5</span> Фінальна загадка — де схований скарб?</li>
+      </ul>
+
+      <div style="background:#fff3cd; border-radius:12px; padding:12px 18px; margin-bottom:24px; font-size:0.9rem; color:#7a5800; font-weight:600;">
+        ⏱️ Час на проходження: <strong>30 хвилин</strong> · Є підказки, якщо справа зайде в глухий кут!
+      </div>
+
+      <div class="name-input-wrap">
+        <div class="name-input-label">🕵️ Як тебе звати детективе?</div>
+        <input class="name-input-field" id="player-name-input" type="text" maxlength="20" placeholder="Введи своє ім'я..." autocomplete="off" onkeydown="if(event.key==='Enter')startGame()">
+		<div class="name-input-label"> Або залишайся інкогніто... тисни на кнопку ⬇️</div>
+      </div>
+
+      <button class="btn btn-gold" style="width:100%; font-size:1.2rem; padding:16px;" onclick="startGame()">
+        🚀 РОЗПОЧАТИ РОЗСЛІДУВАННЯ
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════ РІВЕНЬ 1 — ШИФР ════════════ -->
+  <div id="level1" class="screen">
+    <div class="paper">
+      <span class="chapter-tag">📋 РІВЕНЬ 1 / 5</span>
+      <div class="scene-title">🔐 Шифрований Лист</div>
+      <p class="scene-sub">На місці злочину знайшли записку з дивними символами. Скористайся таблицею шифру, щоб розкодувати слово — воно відкриє двері до наступної кімнати!</p>
+
+      <div class="clue-box">
+        <div class="label">📁 Таблиця шифру</div>
+        <div class="cipher-table" id="cipher-table-1"></div>
+      </div>
+
+      <div class="clue-box">
+        <div class="label">🔍 Зашифроване слово</div>
+        <div class="encoded-word" id="encoded-word-1"></div>
+      </div>
+
+      <p style="font-size:0.9rem; color:#666; margin-top:4px;">Знайди кожен символ у таблиці та запиши відповідну літеру.</p>
+
+      <div class="answer-wrap">
+        <input class="answer-input" id="ans1" maxlength="8" placeholder="СЛОВО" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" onkeydown="if(event.key==='Enter')checkLevel(1)">
+        <button class="btn btn-primary" onclick="checkLevel(1)">ПЕРЕВІРИТИ →</button>
+      </div>
+      <div class="feedback" id="fb1"></div>
+      <button class="hint-toggle" onclick="toggleHint('hint1')">💡 Підказка</button>
+      <div class="hint-text" id="hint1">Знайди символ ★ — йому відповідає перша літера. Іди зліва направо!</div>
+    </div>
+  </div>
+
+  <!-- ════════════ РІВЕНЬ 2 — КРОСВОРД ════════════ -->
+  <div id="level2" class="screen">
+    <div class="paper">
+      <span class="chapter-tag">📋 РІВЕНЬ 2 / 5</span>
+      <div class="scene-title">📝 Кросворд Слідчого</div>
+      <p class="scene-sub">У кабінеті директора музею знайшли записник. Всі слова пов'язані з музеєм та злочином. Заповни кросворд — виділені клітинки дадуть ключове слово!</p>
+
+      <div id="crossword-container" style="overflow-x:auto; text-align:center;"></div>
+
+      <div class="cw-clues">
+        <div class="cw-clue-group">
+          <h4>➡️ По горизонталі</h4>
+          <div id="cw-across"></div>
+        </div>
+        <div class="cw-clue-group">
+          <h4>⬇️ По вертикалі</h4>
+          <div id="cw-down"></div>
+        </div>
+      </div>
+
+      <div class="clue-box" style="margin-top:20px;">
+        <div class="label">🔑 Ключове слово (виділені клітинки)</div>
+        <div style="font-size:0.9rem; color:#555; margin-top:4px;">Прочитай виділені клітинки зверху вниз — це і є відповідь!</div>
+      </div>
+
+      <div class="answer-wrap">
+        <input class="answer-input" id="ans2" maxlength="6" placeholder="СЛОВО" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" onkeydown="if(event.key==='Enter')checkLevel(2)">
+        <button class="btn btn-primary" onclick="checkLevel(2)">ПЕРЕВІРИТИ →</button>
+      </div>
+      <div class="feedback" id="fb2"></div>
+      <button class="hint-toggle" onclick="toggleHint('hint2')">💡 Підказка</button>
+      <div class="hint-text" id="hint2">Перше слово по горизонталі — ЗАМОК. Виділені клітинки дають слово, пов'язане з хранителем скарбів.</div>
+    </div>
+  </div>
+
+  <!-- ════════════ РІВЕНЬ 3 — ЧИСЛОВИЙ КОД ════════════ -->
+  <div id="level3" class="screen">
+    <div class="paper">
+      <span class="chapter-tag">📋 РІВЕНЬ 3 / 5</span>
+      <div class="scene-title">🔢 Сейф з Подвійним Замком</div>
+      <p class="scene-sub">Сейф захищений 6-значним кодом! Злодій залишив зашифровані математичні приклади — але порядок цифр не вказано. Розв'яжи всі приклади, знайди 6 чисел у сітці та розташуй їх <strong>від меншого до більшого</strong>!</p>
+
+      <div class="clue-box">
+        <div class="label">🧮 Шість прикладів — шість цифр коду</div>
+        <div id="math-clues" style="font-size:1rem; line-height:2.4; font-weight:700; color:var(--navy);"></div>
+      </div>
+
+      <div style="background:#fff3e0; border-left:5px solid var(--amber); border-radius:0 12px 12px 0; padding:12px 16px; margin:14px 0; font-size:0.9rem; color:#7a4000; font-weight:600;">
+        ⚠️ <strong>Увага!</strong> У сітці є числа-пастки! Обирай лише ті, що є відповідями на приклади.
+      </div>
+
+      <p style="font-size:0.9rem; color:#666; margin-bottom:6px; font-weight:600;">Натискай числа (потрібно обрати 6):</p>
+      <div class="number-grid" id="num-grid"></div>
+
+      <div style="margin:12px 0; font-size:0.95rem; color:#444; font-weight:700; background:white; border-radius:10px; padding:10px 16px; border:2px solid rgba(26,31,78,0.12);">
+        Обрано (<span id="selected-count">0</span>/6):
+        <span id="selected-nums" style="color:var(--navy); font-family:'Fredoka One',cursive; letter-spacing:3px; font-size:1.05rem;">—</span>
+      </div>
+
+      <div class="answer-wrap">
+        <button class="btn btn-primary" onclick="checkLevel(3)" style="width:100%;">🔓 ВІДКРИТИ ЗАМОК</button>
+      </div>
+      <button class="btn" style="background:transparent; border:2px solid #ccc; color:#888; margin-top:8px; font-size:0.85rem; padding:7px 16px;" onclick="resetNumGrid()">↺ Скинути вибір</button>
+      <div class="feedback" id="fb3"></div>
+      <button class="hint-toggle" onclick="toggleHint('hint3')">💡 Підказка</button>
+      <div class="hint-text" id="hint3">
+        Розв'яжи кожен приклад окремо та запиши результат. Потім знайди ці 6 чисел у сітці й натискай їх від <strong>найменшого до найбільшого</strong>. Остерігайся чисел-пасток поряд!
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ РІВЕНЬ 4 — АНАГРАМА ════════════ -->
+  <div id="level4" class="screen">
+    <div class="paper">
+      <span class="chapter-tag">📋 РІВЕНЬ 4 / 5</span>
+      <div class="scene-title">🔠 Анаграма — Ім'я Злодія</div>
+      <p class="scene-sub">Свідок бачив підпис у книзі відвідувачів, але літери переплутані! Натискай на літери, щоб скласти правильне ім'я підозрюваного.</p>
+
+      <div class="clue-box">
+        <div class="label">🕵️ Підказка свідка</div>
+        <p style="margin:0; font-size:0.95rem; color:var(--navy);">Охоронець каже: <em>"Це була жінка. Її ім'я — назва квітки, але з переплутаними буквами!"</em></p>
+      </div>
+
+      <p style="font-size:0.9rem; color:#666; margin:12px 0 4px;">Натискай літери, щоб додати їх до відповіді:</p>
+
+      <div class="letter-tiles" id="letter-tiles"></div>
+
+      <p style="font-size:0.9rem; color:#666; margin:8px 0 4px;">Твоя відповідь (натисни на літеру, щоб прибрати):</p>
+      <div class="answer-tiles" id="answer-tiles"></div>
+
+      <div class="answer-wrap" style="margin-top:14px;">
+        <button class="btn btn-primary" onclick="checkLevel(4)" style="flex:1">ПЕРЕВІРИТИ →</button>
+        <button class="btn" style="background:transparent; border:2px solid #ccc; color:#888;" onclick="resetAnagram()">↺</button>
+      </div>
+      <div class="feedback" id="fb4"></div>
+      <button class="hint-toggle" onclick="toggleHint('hint4')">💡 Підказка</button>
+      <div class="hint-text" id="hint4">Квітка з 5 літер. Вона росте на клумбі, червона або рожева... </div>
+    </div>
+  </div>
+
+  <!-- ════════════ РІВЕНЬ 5 — ФІНАЛЬНА ЗАГАДКА ════════════ -->
+  <div id="level5" class="screen">
+    <div class="paper">
+      <span class="chapter-tag">📋 РІВЕНЬ 5 / 5 — ФІНАЛ!</span>
+      <div class="scene-title">🏆 Де Схована Пектораль?</div>
+      <p class="scene-sub">Злодій підозрюється, але пектораль ще не знайдено! Прочитай уважно всі 4 підказки, і дай відповідь на питання де схований скарб нації.</p>
+
+      <div style="display:grid; gap:10px; margin:14px 0;">
+        <div class="clue-box" style="border-color:var(--teal);">
+          <div class="label" style="color:var(--teal);">📍 Підказка 1</div>
+          Це місце знаходиться в будівлі, де зберігають старі речі.
+        </div>
+        <div class="clue-box" style="border-color:#a855f7;">
+          <div class="label" style="color:#a855f7;">📍 Підказка 2</div>
+          Воно не на підлозі і не на стелі — саме посередині між ними.
+        </div>
+        <div class="clue-box" style="border-color:var(--green);">
+          <div class="label" style="color:var(--green);">📍 Підказка 3</div>
+          Ти дивишся на нього, але не дзеркало.
+        </div>
+        <div class="clue-box" style="border-color:var(--red);">
+          <div class="label" style="color:var(--red);">📍 Підказка 4</div>
+          Є обрамлення навколо, і часом там є золото.
+        </div>
+      </div>
+
+      <p style="font-size:0.9rem; color:#666; margin-bottom:8px;">Де злодійка сховала пектораль? (одне слово)</p>
+
+      <div class="answer-wrap">
+        <input class="answer-input" id="ans5" maxlength="10" placeholder="МІСЦЕ" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" onkeydown="if(event.key==='Enter')checkLevel(5)">
+        <button class="btn btn-gold" onclick="checkLevel(5)">🔍 ЗНАЙТИ!</button>
+      </div>
+      <div class="feedback" id="fb5"></div>
+      <button class="hint-toggle" onclick="toggleHint('hint5')">💡 Підказка</button>
+      <div class="hint-text" id="hint5">Найпоширеніше місце, де це можно знайти це - Mузей </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="overlay" id="win-overlay">
+  <div class="overlay-box">
+    <div class="big-icon">🏆</div>
+    <h2 id="win-title">Справу Розкрито!</h2>
+    <p id="win-message">Детектив Реджил його команда друзів впоралася з усіма завданнями! Злодійку Троянду спіймано, а золоту пектораль повернуто до музею!</p>
+    <div class="score-line" id="final-score">⏱️ Час: 00:00</div>
+    <button class="btn btn-gold" style="width:100%; font-size:1.1rem;" onclick="restartGame()">🔄 ГРАТИ ЗНОВУ</button>
+  </div>
+</div>
+
+<!-- TIMEOUT OVERLAY -->
+<div class="overlay" id="timeout-overlay">
+  <div class="overlay-box">
+    <div class="big-icon">⏰</div>
+    <h2>Час вийшов!</h2>
+    <p>На жаль, злодій утік. Але детектив не здається — спробуй ще раз! Наступного разу вистачить часу!</p>
+    <button class="btn btn-primary" style="width:100%; font-size:1.1rem; margin-bottom:10px;" onclick="restartGame()">🔄 СПРОБУВАТИ ЗНОВУ</button>
+  </div>
+</div>
+
+<!-- EXIT OVERLAY -->
+<div class="overlay" id="exit-overlay">
+  <div class="overlay-box">
+    <div class="big-icon">🚪</div>
+    <h2>Покинути гру?</h2>
+    <p>Ти впевнений? Весь прогрес буде втрачено, а злодій залишиться на волі!</p>
+    <div style="display:flex; gap:12px; margin-top:4px;">
+      <button class="btn btn-primary" style="flex:1" onclick="document.getElementById('exit-overlay').classList.remove('show')">← ПРОДОВЖИТИ</button>
+      <button class="btn" style="flex:1; background:var(--red); color:white; border:none;" onclick="restartGame()">✕ ВИЙТИ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════
+let timerInterval = null;
+let secondsLeft = 30 * 60;
+let currentLevel = 0;
+let completedLevels = 0;
+let gameStartTime = null;
+let gameActive = false;
+let selectedNums = [];
+let anagramAnswer = [];
+let anagramLetters = [];
+let playerName = '';
+const GAME_DURATION = 30 * 60; // 30 хвилин
+
+// ═══════════════════════════════════════════════════
+// CIPHER DATA (Level 1)
+// ═══════════════════════════════════════════════════
+const cipherMap = {
+  '★': 'К', '♦': 'А', '☾': 'Р', 
+  '✿': 'Т', '⚡': 'И', '♣': 
+  'Н','●': 'А', '✦':'М', '♠': 
+  'О', '✚': 'З', '⬟': 'Е', '♛': 'Й', '◆': 
+  'С', '✸': 'Л', '⊕': 'Д'
+};
+const encodedL1 = ['★','♦','☾','✿','⚡','♣','●']; // КАРТИНА
+const answerL1 = 'КАРТИНА';
+
+// ═══════════════════════════════════════════════════
+// CROSSWORD DATA (Level 2)
+// ═══════════════════════════════════════════════════
+// 7x7 grid
+// Answer keyword (starred cells, column 3, rows 0-4): С-Тор-ОЖ = СТОРОЖ (incorrect, let's use МУЗЕЙ)
+// Let's design: keyword = МУЗЕЙ (5 letters), starred cells at column positions
+const CW_ROWS = 7, CW_COLS = 8;
+const cwGrid = [
+  // row 0: ЗАМОК → row0, cols 0-4
+  ['З','А','М','О','К','#','#','#'],
+  // row 1: col2=У (M from ЗАМОК col2), МУЗЕЙ cols 1-5
+  ['#','М','У','З','Е','Й','#','#'],
+  // row 2: СКАРБ cols 0-4
+  ['С','К','А','Р','Б','#','#','#'],
+  // row 3: МАСКА cols 0-4
+  ['М','А','С','К','А','#','#','#'],
+  // row 4: ЗЛОДІЙ cols 0-5
+  ['З','Л','О','Д','І','Й','#','#'],
+  // row 5: МУЗЕЙ col? → НІЧ cols2-4
+  ['#','#','Н','І','Ч','#','#','#'],
+  // row 6: КОД cols 2-4
+  ['#','#','К','О','Д','#','#','#'],
+];
+
+// key word "СТОРОЖ" col3 rows 0-5: О,З,Р,К,Д,?
+// Let me redesign for clean keyword: СТОРОЖ
+// starred col = 3, rows 0-5 → О,З,Р,К,Д,і — not clean
+// Use keyword = МУЗЕЙ: col1 rows 1..., col3 rows...
+// Simpler: keyword vertical in col 2 rows 0-4 = М,У,З,Е,Й → starred col2
+// row0 col2 = 'М' → fix cwGrid:
+const cwData = {
+  grid: [
+    ['#','З','М','А','К','#','#','#'],  // 0: ЗМІАК? no, let's rebuild cleanly
+  ]
+};
+
+// Clean rebuild:
+// keyword col=2, rows 0-4: М-У-З-Е-Й
+// across words that pass through col2:
+//   row0: starts col0 → _  _  М  _ _ → word with М at pos2 = РАМКА (Р А М К А) cols0-4
+//   row1: word with У at pos2 = МУЗЕЙ? no.. ДУБ? no. МУКА? БУРЯ? ТУЛУБ?
+//         let's use: МУЗЕЙ no. How about: КУБОК: К У Б О К → У at pos1. No.
+//         ТУРНЕ: Т У Р Н Е → У at pos1. No need to put word through col2 row1
+//   Simple approach: each keyword letter is also part of an across word.
+
+// Final clean design:
+// keyword = "МУЗЕЙ" vertical, col=3, rows 0-4
+// row0: across word containing col3=М → РАМА: R A M A → positions 2-5? 
+// Let me just hard-code a simple workable crossword.
+
+const GRID_R = 6, GRID_C = 7;
+// keyword letters at col3, rows0-4: M,U,Z,E,Y (Ukr: М,У,З,Е,Й)
+// across words:
+//  row0 cols1-4: РАМК→ no. Let's use: ЗАМОК cols0-4: З А М О К (М at col2 not 3)
+//  Try keyword at col4:
+//  row0 across: ЗАМОК cols0-4 → К at col4 ✗
+//  row0 across: ЛАМПА cols2-6 → М at col4? L(2)A(3)M(4)P(5)A(6) → М at col4 ✓ → keyword[0]=М ✓
+//  row1 across: word with У at col4 → МУЗЕЙ cols2-6: М(2)У(3)З(4)... З not У. 
+//                                      БУКВА cols1-5: Б(1)У(2)К(3)В(4)А(5) → В at col4 ✗
+//                                      РУЧКА cols1-5: Р(1)У(2)Ч(3)К(4)А(5) → К at col4 ✗
+//                                      КУЛАК cols0-4: К(0)У(1)Л(2)А(3)К(4) → К at col4 ✗
+//                                      ПЕРУК? НАГУЛ?
+//                                      Simple: СОЮЗ cols2-5: С(2)О(3)Ю(4)З(5) → Ю not У ✗
+//                                      УЛЮК? 
+// This is getting complex. Let me just define grid directly and derive clues.
+
+// FINAL GRID (6 rows x 7 cols), # = blocked
+// keyword: col 3, rows 0-4 spells СКАРБ (С,К,А,Р,Б)
+const FINAL_GRID_DATA = [
+  // c: 0    1    2    3    4    5    6
+     ['М','У','З','С','Й','#','#'],   // row0 across: МУЗС? no
+];
+
+// I'll just hardcode the grid manually for clean across/down words:
+// Grid 6x6, keyword down col2 rows0-4 = СКАРБ:
+// row0: МАСКА cols0-4 → col2='С'? М(0)А(1)С(2)К(3)А(4) → С at col2 ✓ keyword[0]=С
+// row1: word with К at col2 → КАЗКА cols0-4: К(0)А(1)З(2)К(3)А(4) → З at col2 ✗
+//                               ЄНОТ has 4 letters
+//                               word: ВІКНО cols0-4: В(0)І(1)К(2)Н(3)О(4) → К at col2 ✓ keyword[1]=К ✓
+// row2: word with А at col2 → РАМА cols0-3: Р(0)А(1)М(2)А(3) → М at col2 ✗
+//                              МАЯК cols0-3: М(0)А(1)Я(2)К(3) → Я ✗
+//                              ЗАМОК cols0-4: З(0)А(1)М(2)О(3)К(4) → М ✗
+//                              ПАСТА cols0-4: П(0)А(1)С(2)Т(3)А(4) → С ✗
+//                              ДРАМА: Д(0)Р(1)А(2)М(3)А(4) → А at col2 ✓ keyword[2]=А ✓
+// row3: word with Р at col2 → СТРЕС cols0-4: С(0)Т(1)Р(2)Е(3)С(4) → Р at col2 ✓ keyword[3]=Р ✓
+// row4: word with Б at col2 → КЛУБ cols0-3: К(0)Л(1)У(2)Б(3) → У at col2 ✗
+//                              ЗБІР? З(0)Б(1)І(2)Р(3)→ І ✗
+//                              ТРУБА:Т(0)Р(1)У(2)Б(3)А(4)→ У ✗
+//                              ОБЛІК? РУБІН? Р(0)У(1)Б(2)І(3)Н(4) → Б at col2 ✓ keyword[4]=Б ✓
+
+// DOWN words in col2: С-К-А-Р-Б = СКАРБ ✓ 
+
+// keyword down col=2, rows 0-4: СКАРБ
+// across:
+// row0 cols0-4: МАСКА
+// row1 cols0-4: ВІКНО
+// row2 cols0-4: ДРАМА
+// row3 cols0-4: СТРЕС
+// row4 cols0-4: РУБІН
+// row5: bonus word МУЗЕЙ cols0-4: М(0)У(1)З(2)Е(3)Й(4)
+
+const CW = {
+  rows: 6, cols: 5,
+  answer: 'СКАРБ',
+  keyCol: 2,
+  acrossWords: [
+    { row:0, col:0, word:'МАСКА', clue:'Її носять, щоб не впізнали' },
+    { row:1, col:0, word:'ВІКНО', clue:'Крізь нього злодій міг залізти' },
+    { row:2, col:0, word:'ДРАМА', clue:'Великий спектакль або пригода' },
+    { row:3, col:0, word:'СТРЕС', clue:'Нервування та хвилювання' },
+    { row:4, col:0, word:'РУБІН', clue:'Червоний коштовний камінь' },
+    { row:5, col:0, word:'МУЗЕЙ', clue:'Місце, де зникло прикраса' },
+  ],
+  downWords: [
+    { row:0, col:0, word:'МВДРМ', clue:'(вертикаль: перші букви зліва)' },
+    { row:0, col:2, word:'СКАРБ', clue:'⭐ Ключове слово (виділений стовпець)' },
+  ]
+};
+
+// Build grid array
+function buildCWGrid() {
+  const g = Array.from({length:CW.rows}, ()=>Array(CW.cols).fill('#'));
+  CW.acrossWords.forEach(({row,col,word})=>{
+    for(let i=0;i<word.length;i++) g[row][col+i]=word[i];
+  });
+  return g;
+}
+
+// ═══════════════════════════════════════════════════
+// MATH PUZZLE (Level 3) — 6 answers sorted: 3,5,7,9,12,15
+// ═══════════════════════════════════════════════════
+const mathClues = [
+  { expr:'(4 + 2) × 2 − 3 = ?',  answer:9  },
+  { expr:'20 ÷ 4 + 2 − 4 = ?',   answer:3  },
+  { expr:'3 × 4 + 3 = ?',        answer:15 },
+  { expr:'(8 − 3) × 2 − 3 = ?',  answer:7  },
+  { expr:'24 ÷ 4 − 1 = ?',       answer:5  },
+  { expr:'2 × 2 × 3 = ?',        answer:12 },
+];
+const correctNumOrder = [3,5,7,9,12,15];
+// Grid: correct answers + traps (similar numbers nearby)
+const numGridValues = [3,4,5,6,7,8,9,10,11,12,13,14,15,16,2,17,18,19,20,21];
+
+// ═══════════════════════════════════════════════════
+// ANAGRAM (Level 4)
+// ═══════════════════════════════════════════════════
+const anagramWord = 'ТРОЯНДА'; // flower name
+const anagramShuffled = ['Д','Я','Т','О','Н','А','Р']; // shuffled
+
+// ═══════════════════════════════════════════════════
+// START GAME
+// ═══════════════════════════════════════════════════
+function startGame() {
+  // Capture player name
+  const nameInput = document.getElementById('player-name-input');
+  playerName = nameInput ? nameInput.value.trim() : '';
+  if (!playerName) playerName = 'Детектив';
+
+  // Show player name badge in header
+  const badge = document.getElementById('player-badge');
+  const badgeName = document.getElementById('player-badge-name');
+  if (badge && badgeName) {
+    badgeName.textContent = playerName;
+    badge.style.display = 'flex';
+  }
+
+  gameActive = true;
+  gameStartTime = Date.now();
+  secondsLeft = GAME_DURATION;
+  completedLevels = 0;
+  currentLevel = 1;
+  updateProgress(0);
+  startTimer();
+  initLevel1();
+  initLevel2();
+  initLevel3();
+  initLevel4();
+  showScreen('level1');
+}
+
+// ═══════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    if(!gameActive) return;
+    secondsLeft--;
+    updateTimerDisplay();
+    if(secondsLeft<=0) { clearInterval(timerInterval); gameOver(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(secondsLeft/60);
+  const s = secondsLeft%60;
+  const el = document.getElementById('timer-display');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('urgent', secondsLeft<=120);
+}
+
+// ═══════════════════════════════════════════════════
+// LEVEL INIT
+// ═══════════════════════════════════════════════════
+function initLevel1() {
+  // Build cipher table
+  const ct = document.getElementById('cipher-table-1');
+  ct.innerHTML='';
+  Object.entries(cipherMap).forEach(([sym,letter])=>{
+    const p = document.createElement('div');
+    p.className='cipher-pair';
+    p.innerHTML=`<div class="cipher-sym">${sym}</div><div class="cipher-letter">${letter}</div>`;
+    ct.appendChild(p);
+  });
+  // Show encoded word
+  document.getElementById('encoded-word-1').textContent = encodedL1.join(' ');
+}
+
+function initLevel2() {
+  const gridData = buildCWGrid();
+  const container = document.getElementById('crossword-container');
+  const grid = document.createElement('div');
+  grid.className='crossword-grid';
+  const cellSize = Math.min(44, Math.floor((window.innerWidth - 80) / CW.cols));
+  grid.style.gridTemplateColumns=`repeat(${CW.cols}, ${cellSize}px)`;
+  grid.style.gridTemplateRows=`repeat(${CW.rows}, ${cellSize}px)`;
+
+  for(let r=0;r<CW.rows;r++){
+    for(let c=0;c<CW.cols;c++){
+      const cell = document.createElement('input');
+      cell.maxLength=1;
+      cell.id=`cw-${r}-${c}`;
+      cell.style.width = cellSize+'px';
+      cell.style.height = cellSize+'px';
+      if(gridData[r][c]==='#'){
+        cell.className='cw-cell blocked';
+        cell.disabled=true;
+        cell.value='';
+      } else {
+        cell.className='cw-cell';
+        cell.dataset.correct=gridData[r][c];
+        cell.setAttribute('inputmode','text');
+        cell.setAttribute('autocorrect','off');
+        cell.setAttribute('autocapitalize','characters');
+        cell.setAttribute('spellcheck','false');
+        if(c===CW.keyCol){ cell.style.borderColor='#f5c842'; cell.style.background='#fffbe6'; }
+        cell.addEventListener('input', e=>{
+          e.target.value=e.target.value.toUpperCase().replace(/[^А-ЯЄІЇа-яєії]/g,'');
+          e.target.classList.toggle('filled', e.target.value!=='');
+          // auto advance
+          const inputs = grid.querySelectorAll('input:not([disabled])');
+          const idx = [...inputs].indexOf(e.target);
+          if(e.target.value && idx<inputs.length-1) inputs[idx+1].focus();
+        });
+      }
+      grid.appendChild(cell);
+    }
+  }
+  container.innerHTML='';
+  container.appendChild(grid);
+
+  // Clues
+  const acrossEl = document.getElementById('cw-across');
+  acrossEl.innerHTML='';
+  CW.acrossWords.forEach((w,i)=>{
+    acrossEl.innerHTML+=`<div class="cw-clue-item"><span>${i+1}.</span> ${w.clue}</div>`;
+  });
+  const downEl = document.getElementById('cw-down');
+  downEl.innerHTML=`<div class="cw-clue-item"><span>★</span> Виділений стовпець — ключове слово з 5 літер</div>`;
+}
+
+function initLevel3() {
+  const mc = document.getElementById('math-clues');
+  mc.innerHTML = mathClues.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+      <span style="background:var(--navy);color:var(--gold);font-family:'Fredoka One',cursive;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">${i+1}</span>
+      <span>${c.expr}</span>
+    </div>`).join('');
+
+  const ng = document.getElementById('num-grid');
+  ng.style.gridTemplateColumns = 'repeat(5, 1fr)';
+  ng.style.width = '100%';
+  ng.innerHTML='';
+  // shuffle numGridValues
+  const shuffled = [...numGridValues].sort(()=>Math.random()-0.5);
+  shuffled.forEach(v=>{
+    const cell = document.createElement('div');
+    cell.className='ng-cell';
+    cell.textContent=v;
+    cell.onclick=()=>toggleNum(cell, v);
+    ng.appendChild(cell);
+  });
+  selectedNums=[];
+  document.getElementById('selected-count').textContent='0';
+}
+
+function initLevel4() {
+  anagramAnswer=[];
+  anagramLetters=[...anagramShuffled];
+  renderAnagram();
+}
+
+// ═══════════════════════════════════════════════════
+// LEVEL CHECKS
+// ═══════════════════════════════════════════════════
+function checkLevel(n) {
+  if(n===1) {
+    const val = document.getElementById('ans1').value.trim().toUpperCase();
+    if(val===answerL1) levelPassed(1, 'ans1', 'fb1', 'Чудово! КАРТИНА — це ключ! Ти знайшов перший доказ!');
+    else levelFailed('ans1','fb1','Спробуй ще раз! Подивись уважно на символи.');
+  }
+  else if(n===2) {
+    const val = document.getElementById('ans2').value.trim().toUpperCase();
+    // check crossword cells
+    let cwOk = true;
+    const gridData = buildCWGrid();
+    for(let r=0;r<CW.rows;r++){
+      for(let c=0;c<CW.cols;c++){
+        if(gridData[r][c]==='#') continue;
+        const cell = document.getElementById(`cw-${r}-${c}`);
+        if(cell && cell.value.toUpperCase() !== gridData[r][c]) cwOk=false;
+      }
+    }
+    if(val===CW.answer) {
+      levelPassed('ans2','fb2','Ключове слово СКАРБ знайдено! Кросворд розгадано!');
+    } else {
+      levelFailed('ans2','fb2','Неправильне слово. Заповни кросворд та прочитай виділений стовпець!');
+    }
+  }
+  else if(n===3) {
+    if(selectedNums.length < 6) {
+      showFb('fb3','❗ Потрібно обрати рівно 6 чисел! Ти обрав: '+selectedNums.length,'err');
+      return;
+    }
+    const correct = JSON.stringify([...correctNumOrder]);
+    const chosen = JSON.stringify(selectedNums);
+    if(chosen===correct) {
+      levelPassed(null,'fb3','Замок відкрито! Код 3-5-7-9-12-15 спрацював! 🔓');
+    } else {
+      // check if right numbers but wrong order
+      const chosenSorted = JSON.stringify([...selectedNums].sort((a,b)=>a-b));
+      const correctSorted = JSON.stringify([...correctNumOrder]);
+      if(chosenSorted===correctSorted) {
+        showFb('fb3','❌ Правильні числа, але неправильний порядок! Розстав від меншого до більшого.','err');
+      } else {
+        showFb('fb3','❌ Неправильні числа! Перевір розв\'язки прикладів ще раз.','err');
+      }
+    }
+  }
+  else if(n===4) {
+    const val = anagramAnswer.map(i=>anagramLetters[i]).join('');
+    if(val===anagramWord) {
+      levelPassed(null,'fb4','Правильно! Злодійку звати ТРОЯНДА! Четвертий доказ зібрано!');
+    } else {
+      showFb('fb4','Неправильно! Підказка: це назва квітки 🌹','err');
+    }
+  }
+  else if(n===5) {
+    const val = document.getElementById('ans5').value.trim().toUpperCase();
+    if(val==='КАРТИНА' || val==='КАРТИНІ' || val==='КАРТИНИ') {
+      clearInterval(timerInterval);
+      gameActive=false;
+      const elapsed = Math.floor((Date.now()-gameStartTime)/1000);
+      const em = Math.floor(elapsed/60), es = elapsed%60;
+      document.getElementById('final-score').textContent=`⏱️ Час: ${String(em).padStart(2,'0')}:${String(es).padStart(2,'0')}`;
+      // Personalize win screen with player name
+      const winTitle = document.getElementById('win-title');
+      const winMsg = document.getElementById('win-message');
+      const displayName = playerName && playerName !== 'Детектив' ? playerName : 'Детектив';
+      if(winTitle) winTitle.textContent = `🏆 ${displayName} — Справу Розкрито!`;
+      if(winMsg) winMsg.textContent = `Детектив ${displayName} та команда впоралися з усіма завданнями! Злодійку Троянду спіймано, а золоту пектораль повернуто до музею!`;
+      updateProgress(5);
+      setTimeout(()=>document.getElementById('win-overlay').classList.add('show'),500);
+    } else {
+      levelFailed('ans5','fb5','Майже! Перечитай підказки — де буває рама і золото?');
+    }
+  }
+}
+
+function levelPassed(inputId, fbId, message) {
+  completedLevels++;
+  updateProgress(completedLevels);
+  if(inputId) {
+    const el = document.getElementById(inputId);
+    if(el) el.classList.add('correct');
+  }
+  if(fbId) showFb(fbId, '✅ '+message,'ok');
+  setTimeout(()=>{
+    if(completedLevels<5) {
+      currentLevel=completedLevels+1;
+      showScreen('level'+currentLevel);
+    }
+  }, 1800);
+}
+
+function levelFailed(inputId, fbId, message) {
+  if(inputId){
+    const el=document.getElementById(inputId);
+    if(el){el.classList.add('wrong'); setTimeout(()=>el.classList.remove('wrong'),500);}
+  }
+  showFb(fbId,'❌ '+message,'err');
+}
+
+function showFb(id, msg, type) {
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=msg;
+  el.className='feedback '+(type==='ok'?'ok':'err');
+}
+
+// ═══════════════════════════════════════════════════
+// NUMBER GRID
+// ═══════════════════════════════════════════════════
+function toggleNum(cell, val) {
+  if(cell.classList.contains('selected')) {
+    selectedNums=selectedNums.filter(v=>v!==val);
+    cell.classList.remove('selected');
+  } else {
+    if(selectedNums.length>=6) {
+      showFb('fb3','❗ Можна обрати лише 6 чисел! Скинь вибір, якщо помилився.','err');
+      return;
+    }
+    selectedNums.push(val);
+    cell.classList.add('selected');
+  }
+  document.getElementById('selected-count').textContent=selectedNums.length;
+  document.getElementById('selected-nums').textContent=selectedNums.length?selectedNums.join(' → '):'—';
+}
+
+function resetNumGrid() {
+  selectedNums=[];
+  document.querySelectorAll('.ng-cell').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('selected-nums').textContent='—';
+  document.getElementById('selected-count').textContent='0';
+  document.getElementById('fb3').textContent='';
+}
+
+// ═══════════════════════════════════════════════════
+// ANAGRAM
+// ═══════════════════════════════════════════════════
+function renderAnagram() {
+  const tilesEl=document.getElementById('letter-tiles');
+  tilesEl.innerHTML='';
+  anagramLetters.forEach((letter,i)=>{
+    const t=document.createElement('div');
+    t.className='letter-tile'+(anagramAnswer.includes(i)?' used':'');
+    t.textContent=letter;
+    t.dataset.idx=i;
+    t.onclick=()=>addToAnswer(i);
+    tilesEl.appendChild(t);
+  });
+  const ansEl=document.getElementById('answer-tiles');
+  ansEl.innerHTML='';
+  anagramAnswer.forEach(idx=>{
+    const t=document.createElement('div');
+    t.className='answer-tile';
+    t.textContent=anagramLetters[idx];
+    t.onclick=()=>removeFromAnswer(idx);
+    ansEl.appendChild(t);
+  });
+}
+
+function addToAnswer(idx) {
+  if(anagramAnswer.includes(idx)) return;
+  anagramAnswer.push(idx);
+  const tile=document.querySelector(`[data-idx="${idx}"]`);
+  if(tile) tile.classList.add('used');
+  renderAnagram();
+}
+
+function removeFromAnswer(idx) {
+  anagramAnswer=anagramAnswer.filter(i=>i!==idx);
+  renderAnagram();
+}
+
+function resetAnagram() {
+  anagramAnswer=[];
+  renderAnagram();
+}
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateProgress(n) {
+  completedLevels=n;
+  document.getElementById('progress-label').textContent=`ПРОГРЕС: ${n} / 5`;
+  document.getElementById('progress-fill').style.width=(n/5*100)+'%';
+}
+
+function toggleHint(id) {
+  const el=document.getElementById(id);
+  el.style.display=el.style.display==='block'?'none':'block';
+}
+
+function confirmExit() {
+  document.getElementById('exit-overlay').classList.add('show');
+}
+
+function gameOver() {
+  gameActive=false;
+  document.getElementById('timeout-overlay').classList.add('show');
+}
+
+function restartGame() {
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
+  clearInterval(timerInterval);
+  gameActive=false;
+  completedLevels=0;
+  currentLevel=0;
+  selectedNums=[];
+  anagramAnswer=[];
+  secondsLeft=GAME_DURATION;
+  playerName='';
+  updateTimerDisplay();
+  updateProgress(0);
+  // Hide player badge
+  const badge = document.getElementById('player-badge');
+  if(badge) badge.style.display='none';
+  // Reset win screen text
+  const winTitle = document.getElementById('win-title');
+  const winMsg = document.getElementById('win-message');
+  if(winTitle) winTitle.textContent = 'Справу Розкрито!';
+  if(winMsg) winMsg.textContent = 'Детектив Реджил і команда друзів впоралася з усіма завданнями! Злодійку Троянду спіймано, а золотий медальйон повернуто до музею!';
+  // reset inputs
+  ['ans1','ans2','ans5'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value='';el.className='answer-input';}
+  });
+  ['fb1','fb2','fb3','fb4','fb5'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent='';
+  });
+  // reset player name input
+  const nameInput = document.getElementById('player-name-input');
+  if(nameInput) nameInput.value='';
+  document.querySelectorAll('.hint-text').forEach(h=>h.style.display='none');
+  showScreen('intro');
+}
+
+// Init timer display on load
+updateTimerDisplay();
+</script>
+</body>
+</html>
